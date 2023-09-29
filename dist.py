@@ -22,6 +22,7 @@ else:
 
 os.system(f'adb connect 127.0.0.1:{port}')
 clicknum = {port:0}
+gachaNum = 0
 
 def search(destPath, originImg, confidence=0.8):
     result = pyautogui.locate(destPath, originImg, confidence=confidence)
@@ -106,14 +107,14 @@ def swipe(x1, y1, x2, y2, port, time=10):
             device.shell(cmd)
             break
     
-def imageWait(imgPath, bluestack, timeout=2):
+def imageWait(imgPath, bluestack, timeout=2, confidence=0.8):
     startTime = time()
     imgPath = 'img/' + imgPath + '.png'
 
     while True:
         try:
             im = background_screenshot(bluestack)
-            result = search(imgPath, im)
+            result = search(imgPath, im, confidence)
             if result != None:
                 return True
             
@@ -191,6 +192,7 @@ def terms(port, bluestack):
         return False
 
     click(727,626, port)
+    print(f"약관 {int(time()-startTime)}s {port}")
 
 def guest_login_1(port, bluestack):
     coords = search('img/guest_login_1.png' ,background_screenshot(bluestack))
@@ -214,6 +216,7 @@ def jab(port, bluestack):
     click(559, 416, port)
     click(745, 311, port)
     click(804, 499, port)
+    print(f'볼잡기 {int(time()-startTime)}s {port}')
 
 def naming(port, bluestack, name='temp'):
     coords = search('img/naming.png' ,background_screenshot(bluestack))
@@ -225,6 +228,7 @@ def naming(port, bluestack, name='temp'):
     sleep(0.8)
     click(665, 522, port)
     click(665, 522, port)
+    print(f'이름 {int(time()-startTime)}s {port}')
 
 def ok(port, bluestack):
     coords = search('img/ok.png' ,background_screenshot(bluestack))
@@ -311,6 +315,7 @@ def timefast(port, bluestack):
         return False
     
     click(1167, 38, port)
+    print(f'배속 {int(time()-startTime)}s {port}')
     
 def lock(port, bluestack):
     coords = search('img/lock.png' ,background_screenshot(bluestack))
@@ -318,6 +323,7 @@ def lock(port, bluestack):
         return False
     
     click(369, 675, port)
+    print(f'lock {int(time()-startTime)}s {port}')
 
 def gacha(port, bluestack):
     coords = search('img/gacha.png' ,background_screenshot(bluestack))
@@ -332,6 +338,23 @@ def gacha_1(port, bluestack):
         return False
     
     click(1172, 658, port)
+
+def gacha2(port, bluestack):
+    pass
+    # coords = search('img/check_gacha_end.png' ,background_screenshot(bluestack))
+    # if not coords:
+    #     return False
+    
+    # click(1001, 118, port)
+    # if imageWait('gacha10', bluestack, 0.9): # 가차 가능
+    #     click(1155, 638, port)
+        
+    # elif getMail:
+    #     gachaEnd = True
+    # else:
+    #     Gacha.getMail(port, bluestack)
+
+
 
 def gacha_start(port, bluestack):
     coords = search('img/gacha_start.png' ,background_screenshot(bluestack))
@@ -370,6 +393,7 @@ def table(port, bluestack):
         return False
     
     click(28, 129, port)
+    print(f'속성 {int(time()-startTime)}s {port}')
 
 def table2(port, bluestack):
     coords = search('img/table2.png' ,background_screenshot(bluestack))
@@ -414,65 +438,138 @@ class Gacha:
                 return 'gachaend'
             return 'gacha'
 
-    def Task(port, bluestack):
-        click(1231, 38, port) # 홈
+    def goHome(port, bluestack):
+        start = time()
+        while time() - start < 3:
+            keyevent('KEYCODE_BACK', port)
+            if imageWait('app_exit', bluestack, 1):
+                click(506, 556, port)
+                return True
+
+        return False
+    
+    def startGacha10(port, bluestack):
+        Gacha.goHome(port, bluestack)
+        click(76, 664, port) # 모집 클릭
         sleep(0.5)
+        click(992, 114, port) # 상시 모집
+        sleep(0.5)
+        click(1144, 636, port) # 10연차 클릭
+
+    def startNewbie10(port, bluestack):
+        Gacha.goHome(port, bluestack)
+        click(76, 664, port) # 모집 클릭
+        sleep(0.5)
+        click(1144, 636, port) # 10연차 클릭
+
+    def getMail(port, bluestack):
+        global startTime
+
+        Gacha.goHome(port, bluestack)
         click(1182, 38, port) # 메일함
         sleep(0.5)
         click(1049, 636, port) # 메일함
         if imageWait('mail', bluestack):
-            click(685, 641, port) # 스크린 터치
+            sleep(1)
+            click(1049, 636, port) # 메일함
+            if Gacha.goHome(port, bluestack):
+                print(f"getMail {int(time()-startTime)}s {port}")
+                return True
+            return False
 
         elif imageWait('mail2', bluestack): # 메일 이미 받음
-            click(685, 641, port) 
-            sleep(0.5)
-            click(1121, 70, port) # 메일함 닫기
-            sleep(0.5)
-            click(76, 664, port) # 모집 클릭
-            sleep(0.5)
-            click(992, 114, port) # 상시 모집
-            sleep(0.5)
-            click(1144, 636, port) # 10연차 클릭
-            return True
+            sleep(1)
+            click(1049, 636, port) # 메일함
+            Gacha.goHome(port, bluestack)
+            if Gacha.goHome(port, bluestack):
+                print(f"getMail {int(time()-startTime)}s {port}")
+                return True
+            return False
         else:
             return False
         
+    def getCurrentStatus(port, bluestack):
+        if search('img/gacha.png' ,background_screenshot(bluestack), confidence=0.8):
+            return 'home'
+        
+        if search('img/check_gacha_end.png' ,background_screenshot(bluestack), confidence=0.8):
+            return 'gachaMain'
+
+        return 'unknown'
+
     def gachaLoop(port, bluestack):
+        global gachaNum
+
+        status = Gacha.getCurrentStatus(port, bluestack)
+        if status != 'unknown':
+            if gachaNum > 5:
+                Gacha.startGacha10(port, bluestack)
+                imageWait('gacha_start', bluestack)
+            else:
+                Gacha.startNewbie10(port, bluestack)
+                imageWait('gacha_start', bluestack)
+            gachaNum += 1
+            print(f'Gacha {gachaNum}', port)
+            return False
+
         click(528, 489, port)
         click(1191, 43, port)
         
         result = Gacha.checkGachaRetry(bluestack)
         if result == 'retry':
+        
             click(786, 632, port) # 다시 뽑기
-            print(f'Gacha', port)
+            gachaNum += 1
+            print(f'Gacha {gachaNum}', port)
             return False
 
         elif result == 'gachaend':
-            click(634, 623, port) # 확인 (뽑기 끝)
-            print('Gacha End', port)
+            if gachaNum == 5:
+                click(614,623, port)
+                sleep(1)
+                Gacha.startGacha10(port, bluestack)
+                imageWait('gacha_start', bluestack)
+                gachaNum += 1
+                print('change to normal gacha', port)
+                print(f'Gacha {gachaNum}', port)
+
+            else:
+                click(634, 623, port) # 확인 (뽑기 끝)
+                if imageWait('check_gacha_end', bluestack):
+                    print('Gacha End', port)
+                    return True
+        return False
+
+    def goSado(port, bluestack):
+        Gacha.goHome(port, bluestack)
+        click(459, 666, port) # 사도
+        if imageWait('isSadoRoom', bluestack):
+            print('sadoCheck Enter')
             return True
         return False
         
-    def checkSado(port, bluestack, whitelist=[2547, 2163, 2036, 1874]):
-        click(1231, 38, port) # 홈
-        sleep(0.5)
-        click(459, 666, port)
-        sleep(1)
+    def checkSado(port, bluestack, whitelist=[257, 2163, 2036, 1874]):
         lst = ocr()
-        print(lst)
+        print("사도 OCR 결과 :", lst)
         img = background_screenshot(bluestack)
         # save img
         img.save(f'save/{time()}.png')
+        targetNum = 0
         for target in whitelist:
             for i in lst:
                 if i == target:
-                    return True
-                
+                    targetNum += 1
+
+        print("발견 사도 :", targetNum)
+        if targetNum >= 2:
+            print("사도 발견")
+            return True
+        
+        print("사도 미발견")
         return False
 
     def cacheReset(port):
-        click(1231, 38, port) # 홈
-        sleep(0.5)
+        Gacha.goHome(port, bluestack)
         click(1231, 38, port) # 메뉴
         sleep(0.5)
         click(765, 310, port) # 설정
@@ -500,6 +597,7 @@ class Gacha:
         exit(port, bluestack)
         gacha(port, bluestack)
         gacha_1(port, bluestack)
+        gacha2(port, bluestack)
         gacha_start(port, bluestack)
         dialog(port, bluestack)
         universal(port, bluestack)
@@ -509,22 +607,14 @@ def errorTask(port, bluestack):
     restartApp(port, bluestack)
     sleep(3)
 
-isTermEnd = False
-isLoginEnd = False
-isNamingEnd = False
-isNextstageEnd = False
-isEventstageEnd = False
-isThirdstageEnd = False
-isTableEnd = False
-isTimeFastEnd = False
-isLockEnd = False
-
 isTutorialGachaStart = False
 isTutorialGachaEnd = False
 getMail = False
 gachaEnd = False
+isSadoRoom = False
 checkEnd = False
 noClickStack = 0
+startTime = time()
 resizeBluestack(bluestack)
 while True:
     prevClickNum = clicknum[port]
@@ -536,14 +626,18 @@ while True:
         gacha_skip(port, bluestack)
         universal(port, bluestack)
         isTutorialGachaEnd = Gacha.checkGachaEnd(bluestack) # 첫번째 가차 종료 체크
+
     elif not getMail:
-        getMail = Gacha.Task(port, bluestack)
+        getMail = Gacha.getMail(port, bluestack) # 메일 수령 후 상시 10연차 시작
 
     elif not gachaEnd:
         gachaEnd = Gacha.gachaLoop(port, bluestack)
 
+    elif not isSadoRoom:
+        isSadoRoom = Gacha.goSado(port, bluestack)
+
     elif Gacha.checkSado(port, bluestack):
-        print('sado Find')
+        print('Find Sado')
         break
     else:
         Gacha.cacheReset(port)
@@ -551,7 +645,9 @@ while True:
         isTutorialGachaEnd = False
         getMail = False
         gachaEnd = False
+        isSadoRoom = False
         checkEnd = False
+        startTime = time()
 
     # 아래는 비정상 Loop 처리
 
