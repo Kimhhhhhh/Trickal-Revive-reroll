@@ -248,7 +248,7 @@ def arrow(port, bluestack):
             return
 
 def youngchoon(port, bluestack):
-    target = ['youngchoon', 'youngchoon2', 'youngchoon3']
+    target = ['youngchoon', 'youngchoon2', 'youngchoon3', 'youngchoon4']
 
     for i in target:
         coords = search(f'img/{i}.png' ,background_screenshot(bluestack), confidence=0.8)
