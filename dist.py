@@ -693,16 +693,16 @@ if __name__ == '__main__':
 
         # 아래는 비정상 Loop 처리
 
-        if prevClickNum == clicknum[port]: # No click
-            noClickStack += 1
-        else:
-            noClickStack = 0
+        # if prevClickNum == clicknum[port]: # No click
+        #     noClickStack += 1
+        # else:
+        #     noClickStack = 0
 
-        if noClickStack == 100:
-            noClickStack = 0
-            errorTask(port, bluestack)
-            isTutorialGachaStart = True
-            isTutorialGachaEnd = True
-            getMail = True
-            gachaEnd = True
-            print('errorTask', port)
+        # if noClickStack == 100:
+        #     noClickStack = 0
+        #     errorTask(port, bluestack)
+        #     isTutorialGachaStart = True
+        #     isTutorialGachaEnd = True
+        #     getMail = True
+        #     gachaEnd = True
+        #     print('errorTask', port)
