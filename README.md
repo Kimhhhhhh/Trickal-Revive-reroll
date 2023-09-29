@@ -1,20 +1,9 @@
 # BlueStack 5 전용 트릭컬 리바이브 리세마라 매크로
 Python으로 작성된 트릭컬 리바이브 리세마라 매크로입니다. <br>
-Pytesseract를 사용한 OCR로 뽑기가 끝난 뒤 사도를 확인하는게 특징입니다. <br>
-볼그림 넷 중 둘 나오면 매크로는 멈춥니다.
+볼그림 넷 중 둘 나오면 매크로는 멈춥니다. <br>
 되는대로 만들어서 굉장히 코드가 난잡합니다. 감사합니다.
 
 ## Requirements
-- adb.exe
-    - 환경변수로 등록해야합니다.
-    - https://4urdev.tistory.com/77
-
-- tesseract-ocr
-    - https://github.com/UB-Mannheim/tesseract/wiki
-    - Tesseract installer for Windows를 다운로드 후 설치하면 됩니다.
-    - 설치 경로는 C:/Program Files/Tesseract-OCR 입니다.
-    - C:/Program Files/Tesseract-OCR/tesseract.exe에 해당하는 파일이 있어야합니다.
-
 - Bluestack 5 (중요)
     - 매크로를 실행을 위한 앱 플레이어입니다.
     - 성능 설정은 따로 테스트하지 못했습니다.
@@ -48,6 +37,10 @@ macro.exe [port] [AppPlayerNum]
 > 여러 배럭의 매크로를 돌리고 싶으시면, 그 만큼 프로그램을 실행시키면 됩니다.
 
 ## History
+- v1.0.3
+    - 출석체크 비정상 Loop 의심코드 개선.
+    - 사도 확인시 OCR 방식에서 이미지 인식 방식으로 변경.
+      
 - v1.0.2
     - 게임 시작 볼 땡기기 좌표 추가.
     - 전투 중 4학년 손패 좌표 추가.
