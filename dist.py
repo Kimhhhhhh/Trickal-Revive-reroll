@@ -3,6 +3,7 @@ from ppadb.client import Client as AdbClient
 from time import sleep, time
 from PIL import Image
 import pyautogui
+from pyscreeze import locate
 import win32gui
 import win32con
 import win32ui
@@ -51,6 +52,8 @@ def resizeBluestack(bluestack, width=1280, height=735):
     win32gui.MoveWindow(hwnd, x0, y0, width, height, True)
 
 def background_screenshot(bluestack):
+    global screenshot_time, im
+
     if bluestack == 0:
         hwnd = win32gui.FindWindow(None, f'BlueStacks App Player')
     elif bluestack == -1:
@@ -61,20 +64,23 @@ def background_screenshot(bluestack):
     width = 1280
     height = 735
     
-    wDC = win32gui.GetWindowDC(hwnd)
-    dcObj=win32ui.CreateDCFromHandle(wDC)
-    cDC=dcObj.CreateCompatibleDC()
-    dataBitMap = win32ui.CreateBitmap()
-    dataBitMap.CreateCompatibleBitmap(dcObj, width, height)
-    cDC.SelectObject(dataBitMap)
-    cDC.BitBlt((0,0),(width, height) , dcObj, (0,0), win32con.SRCCOPY)
-    bmpinfo = dataBitMap.GetInfo()
-    bmpstr = dataBitMap.GetBitmapBits(True)
-    im = Image.frombuffer('RGB', (bmpinfo['bmWidth'], bmpinfo['bmHeight']), bmpstr, 'raw', 'BGRX', 0, 1)
-    dcObj.DeleteDC()
-    cDC.DeleteDC()
-    win32gui.ReleaseDC(hwnd, wDC)
-    win32gui.DeleteObject(dataBitMap.GetHandle())
+    if time() - screenshot_time > 0.05:
+        wDC = win32gui.GetWindowDC(hwnd)
+        dcObj=win32ui.CreateDCFromHandle(wDC)
+        cDC=dcObj.CreateCompatibleDC()
+        dataBitMap = win32ui.CreateBitmap()
+        dataBitMap.CreateCompatibleBitmap(dcObj, width, height)
+        cDC.SelectObject(dataBitMap)
+        cDC.BitBlt((0,0),(width, height) , dcObj, (0,0), win32con.SRCCOPY)
+        bmpinfo = dataBitMap.GetInfo()
+        bmpstr = dataBitMap.GetBitmapBits(True)
+        im = Image.frombuffer('RGB', (bmpinfo['bmWidth'], bmpinfo['bmHeight']), bmpstr, 'raw', 'BGRX', 0, 1)
+        dcObj.DeleteDC()
+        cDC.DeleteDC()
+        win32gui.ReleaseDC(hwnd, wDC)
+        win32gui.DeleteObject(dataBitMap.GetHandle())
+        screenshot_time = time()
+
     return im
 
 def press(x, y, port, time=10):
@@ -582,7 +588,6 @@ class Gacha:
         terms(port, bluestack)
         guest_login_1(port, bluestack)
         naming(port, bluestack) # 이름 짓기
-        jab(port, bluestack) # 시작 볼 땡기기
         go(port, bluestack)
         nextstage(port, bluestack)
         eventstage(port, bluestack)
@@ -634,6 +639,20 @@ if __name__ == '__main__':
     stopNum = int(stopNum)
 
     os.system(f'adb connect 127.0.0.1:{port}')
+
+    connectSuccess = False
+    print('Device List')
+    for i, device in enumerate(client.devices()):
+        print(f"[{i}] {device.serial}")
+        if device.serial.split(':')[1] == port:
+            print('Device Connect Success')
+            connectSuccess = True
+            break
+
+    if not connectSuccess:
+        print(f'ADB가 연결되지 않았습니다. 관리자 권한으로 cmd를 열고 adb connect 127.0.0.1:{port} 를 입력해주세요.')
+        exit()
+
     clicknum = {port:0}
     gachaNum = 0
 
@@ -643,13 +662,19 @@ if __name__ == '__main__':
     gachaEnd = False
     isSadoRoom = False
     checkEnd = False
-    noClickStack = 0
+    noScreenChangeStack = 0
     startTime = time()
+    screenshot_time = time()
+
+    sleep(1)
     resizeBluestack(bluestack)
+    previmg = background_screenshot(bluestack)
     while True:
+        
         prevClickNum = clicknum[port]
         attendance(port, bluestack)
         homestart(port, bluestack)
+        jab(port, bluestack) # 시작 볼 땡기기
 
         if not isTutorialGachaStart:
             isTutorialGachaStart = Gacha.beforeTutoGacha(port, bluestack)
@@ -682,6 +707,29 @@ if __name__ == '__main__':
             startTime = time()
 
         # 아래는 비정상 Loop 처리
+        # if locate(previmg ,background_screenshot(bluestack)): # 화면이 안바뀜
+        #     noScreenChangeStack += 1
+        # else:
+        #     noScreenChangeStack = 0
+        #     previmg = background_screenshot(bluestack)
+
+        # if noScreenChangeStack % 20 == 0 and noScreenChangeStack != 0:
+        #     print('noScreenChangeStack', noScreenChangeStack)
+
+        # if noScreenChangeStack == 100:
+        #     noScreenChangeStack = 0
+        #     isTutorialGachaStart = False
+        #     isTutorialGachaEnd = False
+        #     getMail = False
+        #     gachaEnd = False
+        #     isSadoRoom = False
+        #     checkEnd = False
+        #     gachaNum = 0
+        #     startTime = time()
+        #     errorTask(port, bluestack)
+        #     print('errorTask', port)
+
+
 
         # if prevClickNum == clicknum[port]: # No click
         #     noClickStack += 1
