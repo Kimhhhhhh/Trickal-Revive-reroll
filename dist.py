@@ -216,6 +216,18 @@ def jab(port, bluestack):
     click(559, 416, port)
     click(745, 311, port)
     click(804, 499, port)
+    click(631, 618, port)
+    click(771, 651, port)
+    click(644, 246, port)
+    click(951, 115, port)
+    click(540, 651, port)
+    click(1234, 355, port)
+    click(1154,601, port) #
+    click(1173,423, port) #
+    click(618,573, port) #
+    click(847, 538, port) #
+    click(719, 688, port) #
+    click(945, 493, port) #
     print(f'볼잡기 {int(time()-startTime)}s {port}')
 
 def naming(port, bluestack, name='temp'):
