@@ -261,7 +261,7 @@ def arrow(port, bluestack):
             click(951, 115, port)
             click(540, 651, port)
             click(1234, 355, port) # 전투다음
-
+            click(899, 638, port)
             return
 
 def youngchoon(port, bluestack):
