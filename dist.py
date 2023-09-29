@@ -574,8 +574,8 @@ class Gacha:
         
     def checkSado(port, bluestack):
         targetNum = Gacha.vcountSado(port, bluestack)
-
-        if targetNum >= 2:
+        background_screenshot(bluestack).save(f'{time()}.png')
+        if targetNum >= stopNum:
             print("사도 발견")
             return True
         
@@ -642,6 +642,9 @@ if __name__ == '__main__':
         pickUp = True
     else:
         pickUp = False
+
+    stopNum = input('사도가 몇개 이상 나올시 중지하시겠습니까? (숫자만 입력) : ')
+    stopNum = int(stopNum)
 
     os.system(f'adb connect 127.0.0.1:{port}')
     clicknum = {port:0}
