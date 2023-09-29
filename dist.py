@@ -7,22 +7,29 @@ import win32gui
 import win32con
 import win32ui
 import os
-import pytesseract
 import sys
 
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
-client = AdbClient(host="127.0.0.1", port=5037)
+def getWindowList():
+    def callback(hwnd, hwnd_list: list):
+        title = win32gui.GetWindowText(hwnd)
+        if win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd) and title:
+            hwnd_list.append((title, hwnd))
+        return True
+    output = []
+    win32gui.EnumWindows(callback, output)
+    return output
 
-if len(sys.argv) > 1:
-    port = sys.argv[1]
-    bluestack = sys.argv[2]
-else:
-    port = '5555'
-    bluestack = 0
+def inputValue():
+    windowList = getWindowList()
+    for i, window in enumerate(windowList):
+        print(f'[{i}]', window)
+    print('=============================')
+    hwndNum = input('매크로를 실행시킬 블루스택 App Player의 번호를 입력해주세요. (숫자만 입력) : ')
+    hwndNum = windowList[int(hwndNum)][1]
+    print('=============================')
+    port = input('ADB 포트번호를 입력해주세요. (숫자만 입력) : ')
 
-os.system(f'adb connect 127.0.0.1:{port}')
-clicknum = {port:0}
-gachaNum = 0
+    return hwndNum , port
 
 def search(destPath, originImg, confidence=0.8):
     result = pyautogui.locate(destPath, originImg, confidence=confidence)
@@ -35,6 +42,8 @@ def search(destPath, originImg, confidence=0.8):
 def resizeBluestack(bluestack, width=1280, height=735):
     if bluestack == 0:
         hwnd = win32gui.FindWindow(None, f'BlueStacks App Player')
+    elif bluestack == -1:
+        hwnd = hwndNum
     else:
         hwnd = win32gui.FindWindow(None, f'BlueStacks App Player {bluestack}')
 
@@ -44,6 +53,8 @@ def resizeBluestack(bluestack, width=1280, height=735):
 def background_screenshot(bluestack):
     if bluestack == 0:
         hwnd = win32gui.FindWindow(None, f'BlueStacks App Player')
+    elif bluestack == -1:
+        hwnd = hwndNum
     else:
         hwnd = win32gui.FindWindow(None, f'BlueStacks App Player {bluestack}')
     
@@ -158,31 +169,6 @@ def restartApp(port, bluestack):
     sleep(0.5)
     startApp(port, bluestack)
 
-def ocr():
-    coords = [(100, 350, 170, 380),
-            (300, 350, 370, 380),
-            (490, 350, 560, 380),
-            (690, 350, 760, 380),
-            (890, 350, 960, 380),
-            (1090, 350, 1160, 380),
-            (100, 560, 170, 590),
-            (300, 560, 370, 590),
-            (490, 560, 560, 590),
-            (690, 560, 760, 590),
-            (890, 560, 960, 590),
-            (1090, 560, 1160, 590)]
-
-    lst = []
-    for i in coords:
-        img = cropimage(background_screenshot(0), i[0], i[1], i[2], i[3])
-        try:
-            lst.append(int(pytesseract.image_to_string(img, config="--psm 7 digits").replace('.', '').replace(',', '').replace('\n', '')))
-        except:
-            pass
-
-
-    return lst
-
 def cropimage(img, x1, y1, x2, y2):
     img = img.crop((x1, y1+22, x2, y2+22))
     return img
@@ -262,6 +248,7 @@ def arrow(port, bluestack):
             click(540, 651, port)
             click(1234, 355, port) # 전투다음
             click(899, 638, port)
+            click(390, 654, port)
             return
 
 def youngchoon(port, bluestack):
@@ -419,7 +406,10 @@ def attendance(port, bluestack):
     if not coords:
         return False
     
+    click(1230, 39, port)
+    sleep(0.5)
     click(1235, 39, port)
+    Gacha.goHome(port, bluestack)
 
 def exit(port, bluestack):
     coords = search('img/exit.png' ,background_screenshot(bluestack))
@@ -454,8 +444,10 @@ class Gacha:
         start = time()
         while time() - start < 3:
             keyevent('KEYCODE_BACK', port)
-            if imageWait('app_exit', bluestack, 1):
+            if imageWait('app_exit', bluestack, 2):
                 click(506, 556, port)
+                sleep(1)
+
                 return True
 
         return False
@@ -464,7 +456,10 @@ class Gacha:
         Gacha.goHome(port, bluestack)
         click(76, 664, port) # 모집 클릭
         sleep(0.5)
-        click(992, 114, port) # 상시 모집
+        if pickUp:
+            click(812, 114, port)
+        else:
+            click(992, 114, port) # 상시 모집
         sleep(0.5)
         click(1144, 636, port) # 10연차 클릭
 
@@ -483,7 +478,9 @@ class Gacha:
         click(1049, 636, port) # 메일함
         if imageWait('mail', bluestack):
             sleep(1)
-            click(1049, 636, port) # 메일함
+            click(662, 602, port) # 메일함
+            sleep(0.3)
+            click(662, 602, port) # 메일함
             if Gacha.goHome(port, bluestack):
                 print(f"getMail {int(time()-startTime)}s {port}")
                 return True
@@ -559,20 +556,25 @@ class Gacha:
             print('sadoCheck Enter')
             return True
         return False
+    
+    def vcountSado(port, bluestack):
+        sadoImgList = []
+        sadoList = []
+        for i in os.listdir('sado'):
+            sadoImgList.append(Image.open(f'sado/{i}')) 
+            sadoList.append(i[:-4])
         
-    def checkSado(port, bluestack, whitelist=[257, 2163, 2036, 1874]):
-        lst = ocr()
-        print("사도 OCR 결과 :", lst)
-        img = background_screenshot(bluestack)
-        # save img
-        img.save(f'save/{time()}.png')
         targetNum = 0
-        for target in whitelist:
-            for i in lst:
-                if i == target:
-                    targetNum += 1
+        for i, img in enumerate(sadoImgList):
+            if search(img, background_screenshot(bluestack), 0.83):
+                print('Find :', sadoList[i])
+                targetNum += 1
+        print('Total Find Num :', targetNum)
+        return targetNum
+        
+    def checkSado(port, bluestack):
+        targetNum = Gacha.vcountSado(port, bluestack)
 
-        print("발견 사도 :", targetNum)
         if targetNum >= 2:
             print("사도 발견")
             return True
@@ -619,61 +621,88 @@ def errorTask(port, bluestack):
     restartApp(port, bluestack)
     sleep(3)
 
-isTutorialGachaStart = False
-isTutorialGachaEnd = False
-getMail = False
-gachaEnd = False
-isSadoRoom = False
-checkEnd = False
-noClickStack = 0
-startTime = time()
-resizeBluestack(bluestack)
-while True:
-    prevClickNum = clicknum[port]
-    attendance(port, bluestack)
+def homestart(port, bluestack):
+    coords = search('img/homestart.png' ,background_screenshot(bluestack), 0.8)
+    if coords:
+        click(coords[0], coords[1], port)
+        print('homestart Click')
 
-    if not isTutorialGachaStart:
-        isTutorialGachaStart = Gacha.beforeTutoGacha(port, bluestack)
-    elif not isTutorialGachaEnd:
-        gacha_skip(port, bluestack)
-        universal(port, bluestack)
-        isTutorialGachaEnd = Gacha.checkGachaEnd(bluestack) # 첫번째 가차 종료 체크
+if __name__ == '__main__':
+    client = AdbClient(host="127.0.0.1", port=5037)
 
-    elif not getMail:
-        getMail = Gacha.getMail(port, bluestack) # 메일 수령 후 상시 10연차 시작
-
-    elif not gachaEnd:
-        gachaEnd = Gacha.gachaLoop(port, bluestack)
-
-    elif not isSadoRoom:
-        isSadoRoom = Gacha.goSado(port, bluestack)
-
-    elif Gacha.checkSado(port, bluestack):
-        print('Find Sado')
-        break
+    if len(sys.argv) > 1:
+        port = sys.argv[1]
+        bluestack = sys.argv[2]
     else:
-        Gacha.cacheReset(port)
-        isTutorialGachaStart = False
-        isTutorialGachaEnd = False
-        getMail = False
-        gachaEnd = False
-        isSadoRoom = False
-        checkEnd = False
-        gachaNum = 0
-        startTime = time()
+        hwndNum, port = inputValue()
+        bluestack = -1
 
-    # 아래는 비정상 Loop 처리
-
-    if prevClickNum == clicknum[port]: # No click
-        noClickStack += 1
+    pickUp = input('초보자 뽑기 이후 픽업 가차를 진행하시겠습니까? (y/n) : ')
+    if pickUp == 'y':
+        pickUp = True
     else:
-        noClickStack = 0
+        pickUp = False
 
-    if noClickStack == 100:
-        noClickStack = 0
-        errorTask(port, bluestack)
-        isTutorialGachaStart = True
-        isTutorialGachaEnd = True
-        getMail = True
-        gachaEnd = True
-        print('errorTask', port)
+    os.system(f'adb connect 127.0.0.1:{port}')
+    clicknum = {port:0}
+    gachaNum = 0
+
+    isTutorialGachaStart = False
+    isTutorialGachaEnd = False
+    getMail = False
+    gachaEnd = False
+    isSadoRoom = False
+    checkEnd = False
+    noClickStack = 0
+    startTime = time()
+    resizeBluestack(bluestack)
+    while True:
+        prevClickNum = clicknum[port]
+        attendance(port, bluestack)
+        homestart(port, bluestack)
+
+        if not isTutorialGachaStart:
+            isTutorialGachaStart = Gacha.beforeTutoGacha(port, bluestack)
+        elif not isTutorialGachaEnd:
+            gacha_skip(port, bluestack)
+            universal(port, bluestack)
+            isTutorialGachaEnd = Gacha.checkGachaEnd(bluestack) # 첫번째 가차 종료 체크
+
+        elif not getMail:
+            getMail = Gacha.getMail(port, bluestack) # 메일 수령 후 상시 10연차 시작
+
+        elif not gachaEnd:
+            gachaEnd = Gacha.gachaLoop(port, bluestack)
+
+        elif not isSadoRoom:
+            isSadoRoom = Gacha.goSado(port, bluestack)
+
+        elif Gacha.checkSado(port, bluestack):
+            print('Find Sado')
+            break
+        else:
+            Gacha.cacheReset(port)
+            isTutorialGachaStart = False
+            isTutorialGachaEnd = False
+            getMail = False
+            gachaEnd = False
+            isSadoRoom = False
+            checkEnd = False
+            gachaNum = 0
+            startTime = time()
+
+        # 아래는 비정상 Loop 처리
+
+        if prevClickNum == clicknum[port]: # No click
+            noClickStack += 1
+        else:
+            noClickStack = 0
+
+        if noClickStack == 100:
+            noClickStack = 0
+            errorTask(port, bluestack)
+            isTutorialGachaStart = True
+            isTutorialGachaEnd = True
+            getMail = True
+            gachaEnd = True
+            print('errorTask', port)
