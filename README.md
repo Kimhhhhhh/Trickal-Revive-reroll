@@ -30,10 +30,10 @@ Python으로 작성된 트릭컬 리바이브 리세마라 매크로입니다. <
 ```
 macro.exe [port] [AppPlayerNum]
 ```
-1. `port`는 ADB에 연결하기 위한 포트입니다.
+- `port`는 ADB에 연결하기 위한 포트입니다.
     - 블루스택 앱플레이어 설정 -> 고급기능 설정에서 127.0.0.1:[port]를 확인할 수 있습니다. 4자리 숫자입니다.
 
-2. `AppPlayerNum`은 Bluestack 윈도우 핸들을 얻기 위한 값입니다.
+-  `AppPlayerNum`은 Bluestack 윈도우 핸들을 얻기 위한 값입니다.
     - 블루스택의 좌측 상단에 BlueStacks App Player가 있는데, 우측의 숫자를 의미합니다. <br>숫자가 없이 BlueStacks App Player만 있다면 값으로 0을 넣어주시면 됩니다.
 
 > 여러 배럭의 매크로를 돌리고 싶으시면, 그 만큼 프로그램을 실행시키면 됩니다.
