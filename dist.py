@@ -407,7 +407,7 @@ def attendance(port, bluestack):
     if not coords:
         return False
     
-    click(1235, 49, port)
+    click(1235, 39, port)
 
 def exit(port, bluestack):
     coords = search('img/exit.png' ,background_screenshot(bluestack))
