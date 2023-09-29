@@ -478,9 +478,9 @@ class Gacha:
         click(1049, 636, port) # 메일함
         if imageWait('mail', bluestack):
             sleep(1)
-            click(662, 602, port) # 메일함
+            click(662, 630, port) # 메일함
             sleep(0.3)
-            click(662, 602, port) # 메일함
+            click(662, 630, port) # 메일함
             if Gacha.goHome(port, bluestack):
                 print(f"getMail {int(time()-startTime)}s {port}")
                 return True
@@ -574,7 +574,7 @@ class Gacha:
         
     def checkSado(port, bluestack):
         targetNum = Gacha.vcountSado(port, bluestack)
-        background_screenshot(bluestack).save(f'{time()}.png')
+        background_screenshot(bluestack).save(f'save/{time()}.png')
         if targetNum >= stopNum:
             print("사도 발견")
             return True
@@ -632,10 +632,13 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 1:
         port = sys.argv[1]
-        bluestack = sys.argv[2]
+        bluestack = int(sys.argv[2])
     else:
         hwndNum, port = inputValue()
         bluestack = -1
+
+    print("port :", port)
+    print("bluestack :", bluestack)
 
     pickUp = input('초보자 뽑기 이후 픽업 가차를 진행하시겠습니까? (y/n) : ')
     if pickUp == 'y':
