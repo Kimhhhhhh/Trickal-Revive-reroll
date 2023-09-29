@@ -127,6 +127,7 @@ def imageWait(imgPath, bluestack, timeout=2, confidence=0.8):
             im = background_screenshot(bluestack)
             result = search(imgPath, im, confidence)
             if result != None:
+                sleep(0.3)
                 return True
             
             if time() - startTime > timeout:
@@ -134,18 +135,6 @@ def imageWait(imgPath, bluestack, timeout=2, confidence=0.8):
         except win32ui.error:
             print('imageWait error')
             
-    
-def getScreen(port):
-    cmd1 = 'screencap -p /sdcard/screen.png'
-    cmd2 = f'adb -s 127.0.0.1:{port} pull /sdcard/screen.png'
-
-    devices = client.devices()
-    for device in devices:
-        if device.serial.split(':')[1] == port:
-            device.shell(cmd1)
-            subprocess.call(cmd2, shell=True)
-            im = Image.open('screen.png')
-            return im
         
 def clearApp(port):
     keyevent('KEYCODE_APP_SWITCH', port)
@@ -172,6 +161,7 @@ def restartApp(port, bluestack):
 def cropimage(img, x1, y1, x2, y2):
     img = img.crop((x1, y1+22, x2, y2+22))
     return img
+
 def terms(port, bluestack):
     coords = search('img/terms.png' ,background_screenshot(bluestack))
     if not coords:
@@ -263,6 +253,7 @@ def youngchoon(port, bluestack):
             click(847, 538, port) # 빨간애
             click(719, 688, port) # 마지막나가기
             click(945, 493, port) # 빈자리
+            click(825, 269, port) # 이벤트
 
             return
         
@@ -455,18 +446,18 @@ class Gacha:
     def startGacha10(port, bluestack):
         Gacha.goHome(port, bluestack)
         click(76, 664, port) # 모집 클릭
-        sleep(0.5)
+        imageWait('check_gacha_end', bluestack)
         if pickUp:
             click(812, 114, port)
         else:
             click(992, 114, port) # 상시 모집
-        sleep(0.5)
+        imageWait('gacha10', bluestack)
         click(1144, 636, port) # 10연차 클릭
 
     def startNewbie10(port, bluestack):
         Gacha.goHome(port, bluestack)
         click(76, 664, port) # 모집 클릭
-        sleep(0.5)
+        imageWait('check_gacha_end', bluestack)
         click(1144, 636, port) # 10연차 클릭
 
     def getMail(port, bluestack):
@@ -474,26 +465,19 @@ class Gacha:
 
         Gacha.goHome(port, bluestack)
         click(1182, 38, port) # 메일함
-        sleep(0.5)
-        click(1049, 636, port) # 메일함
+        imageWait('mail3', bluestack)
+        click(1049, 636, port) # 메일 수령
         if imageWait('mail', bluestack):
-            sleep(1)
-            click(662, 630, port) # 메일함
-            sleep(0.3)
-            click(662, 630, port) # 메일함
-            if Gacha.goHome(port, bluestack):
-                print(f"getMail {int(time()-startTime)}s {port}")
-                return True
-            return False
+            sleep(2)
+            click(662, 630, port) # 빈화면 터치
+            print(f"getMail {int(time()-startTime)}s {port}")
+            return True
 
         elif imageWait('mail2', bluestack): # 메일 이미 받음
             sleep(1)
-            click(1049, 636, port) # 메일함
-            Gacha.goHome(port, bluestack)
-            if Gacha.goHome(port, bluestack):
-                print(f"getMail {int(time()-startTime)}s {port}")
-                return True
-            return False
+            click(1049, 636, port)
+            print(f"getMail {int(time()-startTime)}s {port}")
+            return True
         else:
             return False
         
@@ -585,20 +569,20 @@ class Gacha:
     def cacheReset(port):
         Gacha.goHome(port, bluestack)
         click(1231, 38, port) # 메뉴
-        sleep(0.5)
+        imageWait('reset1', bluestack)
         click(765, 310, port) # 설정
-        sleep(0.5)
+        imageWait('reset2', bluestack)
         click(1013, 151, port) # guitar
-        sleep(0.5)
+        imageWait('reset3', bluestack)
         click(933, 544, port) # cache 클리어
-        sleep(0.5)
+        imageWait('reset4', bluestack)
         click(779, 551, port) # 확인
 
     def beforeTutoGacha(port, bluestack):
         terms(port, bluestack)
         guest_login_1(port, bluestack)
-        naming(port, bluestack)
-        jab(port, bluestack)
+        naming(port, bluestack) # 이름 짓기
+        jab(port, bluestack) # 시작 볼 땡기기
         go(port, bluestack)
         nextstage(port, bluestack)
         eventstage(port, bluestack)
