@@ -647,6 +647,7 @@ while True:
         gachaEnd = False
         isSadoRoom = False
         checkEnd = False
+        gachaNum = 0
         startTime = time()
 
     # 아래는 비정상 Loop 처리
