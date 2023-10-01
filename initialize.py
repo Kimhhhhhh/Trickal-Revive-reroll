@@ -14,6 +14,18 @@ def getWindowList():
     win32gui.EnumWindows(callback, output)
     return output
 
+def getBluestackHwnd(bluestack):
+    windowList = getWindowList()
+    for window in windowList:
+        if bluestack == 0:
+            if window[0].startswith("BlueStacks App Player"):
+                return window[1]
+        else:
+            if window[0].startswith(f"BlueStacks App Player {bluestack}"):
+                return window[1]
+
+    return None
+
 def inputValue():
     windowList = getWindowList()
     for i, window in enumerate(windowList):
@@ -24,26 +36,15 @@ def inputValue():
     print('=============================')
     port = input('ADB 포트번호를 입력해주세요. (숫자만 입력) : ')
 
-    return hwndNum , port
-
-class Macro:
-
-    # 글로벌로 사용할 변수들 모음
-
-    client = AdbClient(host="127.0.0.1", port=5037)
-
-    if len(sys.argv) > 1:
-        port = sys.argv[1]
-        bluestack = int(sys.argv[2])
+    # 초보자 뽑기 할까요?
+    newbie = input('초보자 뽑기를 진행하시겠습니까? (y/n) : ')
+    if newbie == 'y':
+        newbie = True
     else:
-        hwndNum, port = inputValue()
-        bluestack = -1
+        newbie = False
 
-    print("port :", port)
-    print("bluestack :", bluestack)
-
-    # 초보자 50뽑 이후 픽업 or 상시로 할지 설정
-    pickUp = input('초보자 뽑기 이후 픽업 가차를 진행하시겠습니까? (y/n) : ')
+    # 픽업 or 상시로 할지 설정
+    pickUp = input('픽업 가차를 진행하시겠습니까? (y/n) : ')
     if pickUp == 'y':
         pickUp = True
     else:
@@ -52,6 +53,43 @@ class Macro:
     # 사도가 몇개 이상 나올 때 매크로 멈출지 설정
     stopNum = input('사도가 몇개 이상 나올시 중지하시겠습니까? (숫자만 입력) : ')
     stopNum = int(stopNum)
+
+    return hwndNum , port, newbie, pickUp, stopNum
+
+class Macro:
+
+    # 글로벌로 사용할 변수들 모음
+
+    client = AdbClient(host="127.0.0.1", port=5037)
+
+    if len(sys.argv) == 6:
+        port = sys.argv[1]
+        bluestack = int(sys.argv[2])
+        hwndNum = getBluestackHwnd(bluestack)
+        newbie = sys.argv[3]
+        pickUp = sys.argv[4]
+
+        if newbie == 'y':
+            newbie = True
+        else:
+            newbie = False
+
+        if pickUp == 'y':
+            pickUp = True
+        else:
+            pickUp = False
+
+        stopNum = int(sys.argv[5])
+    else:
+        hwndNum, port, newbie, pickUp, stopNum = inputValue()
+        bluestack = -1
+        
+    print('port :', port)
+    print('hwnd :', hwndNum)
+    print('newbie :', newbie)
+    print('pickUp :', pickUp)
+    print('stopNum :', stopNum)
+    print('=============================')
 
     # ADB 연결, 간혹 권한 문제로 연결이 안될 때가 있음 그럴때 무반응 버그 발생
     os.system(f'adb connect 127.0.0.1:{port}')

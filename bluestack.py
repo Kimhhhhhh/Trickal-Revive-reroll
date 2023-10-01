@@ -17,28 +17,14 @@ def search(destPath, originImg, confidence=0.8):
 
 # 블루스택 hwnd 찾고 창 크기 변환
 def resizeBluestack(bluestack, width=1280, height=735):
-    if bluestack == 0:
-        hwnd = win32gui.FindWindow(None, f'BlueStacks App Player')
-    elif bluestack == -1:
-        hwnd = Macro.hwndNum
-    else:
-        hwnd = win32gui.FindWindow(None, f'BlueStacks App Player {bluestack}')
-
+    hwnd = Macro.hwndNum
     x0, y0, x1, y1 = win32gui.GetWindowRect(hwnd)
     win32gui.MoveWindow(hwnd, x0, y0, width, height, True)
 
 # 블루스택 hwnd 찾고 비활성 스크린샷
-# 이미지를 캐싱해서 최적화. 0.05초에 한번씩 캐싱 width, height 하드코딩 되어있음
-def background_screenshot(bluestack):
-    if bluestack == 0:
-        hwnd = win32gui.FindWindow(None, f'BlueStacks App Player')
-    elif bluestack == -1:
-        hwnd = Macro.hwndNum
-    else:
-        hwnd = win32gui.FindWindow(None, f'BlueStacks App Player {bluestack}')
-    
-    width = 1280
-    height = 735
+# 이미지를 캐싱해서 최적화. 0.05초에 한번씩 캐싱
+def background_screenshot(bluestack, width=1280, height=735):
+    hwnd = Macro.hwndNum
     
     if time() - Macro.screenshot_time > 0.05:
         wDC = win32gui.GetWindowDC(hwnd)

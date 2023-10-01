@@ -101,7 +101,7 @@ class Gacha:
     def gachaLoop(port, bluestack):
         status = Gacha.getCurrentStatus(port, bluestack)
         if status != 'unknown':
-            if Macro.gachaNum > 5:
+            if Macro.gachaNum > 5 or Macro.newbie:
                 Gacha.startGacha10(port, bluestack)
                 imageWait('gacha_start', bluestack)
             else:
@@ -122,7 +122,7 @@ class Gacha:
             return False
 
         elif result == 'gachaend':  # 가차가 끝남
-            if Macro.gachaNum == 5:  # 5번째 가차 끝남 -> 초보자 뽑기 끝났으니 상시 or 픽업으로 이동
+            if Macro.gachaNum == 5 and Macro.newbie:  # 5번째 가차 끝남 -> 초보자 뽑기 끝났으니 상시 or 픽업으로 이동
                 click(614,623, port)
                 sleep(1)
                 Gacha.startGacha10(port, bluestack)

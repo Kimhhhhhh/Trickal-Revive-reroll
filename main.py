@@ -31,7 +31,7 @@ if __name__ == '__main__':
             break
 
         else:
-            Gacha.cacheReset(Macro.port)  # 캐리 리셋
+            Gacha.cacheReset(Macro.port)  # 캐시 리셋
             Macro.reset()
 
         # 아래는 비정상 Loop 처리

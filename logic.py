@@ -57,9 +57,10 @@ def naming(port, bluestack, name='temp'):
     if not coords:
         return False
     
-    click(662, 348, port)                                       
+    click(662, 348, port)
+    sleep(1)                                   
     typing(name, port)
-    sleep(0.8)
+    sleep(1)
     click(665, 522, port)
     click(665, 522, port)
     print(f'이름 {int(time()-Macro.startTime)}s {port}')
