@@ -101,7 +101,7 @@ class Gacha:
     def gachaLoop(port, bluestack):
         status = Gacha.getCurrentStatus(port, bluestack)
         if status != 'unknown':
-            if Macro.gachaNum > 5 or Macro.newbie:
+            if Macro.gachaNum > 5 or not Macro.newbie:
                 Gacha.startGacha10(port, bluestack)
                 imageWait('gacha_start', bluestack)
             else:
